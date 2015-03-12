@@ -11,27 +11,36 @@ class UsersCollection
   end
 
   def suggested_groups
-    group_hashes = user_hash.inject({}) do |result, (key, value)|
-      result[key] = suggested_groups_for(key)
+    group_hashes = user_hash.inject({}) do |result, (user_name)|
+      result[user_name] = suggested_groups_for(user_name)
       result
     end
-    group_hashes.map do |key, value|
-      "#{key}:#{value.join(',')}"
-    end.join("\n") << "\n"
+    formatting_output(group_hashes)
   end
 
   def suggested_groups_for(name)
-    # znaleźć przyjaciół osoby name
-    # wykluczyć nieprzyjaciół z user_hash (klucz-imię nie jest wśrod przyjaciół name)
-    # mapować po friends_user_hash żeby otrzymać zainteresowania przyjaciół (wyjdzie tablica) którą trzeba flat
-    # policzyc ile razy jakie zainteresowanie się pojawiło (histogram)
-    # zwrocić metodzie suggested_groups tablice zainteresowań jesli dane zainteresowanie pojawiło się w przynajmniej 50% przypadków
-    friends_of_user = user_hash[name.to_s][:friends]
-    friends_user_hash = user_hash.reject { |key| !friends_of_user.include?(key) }
-    data_for_histogram = friends_user_hash.flat_map do |_, details_hash|
+    histogram(data_for_histogram(name)).select { |_, value| value >= (user_hash[name.to_s][:friends].count / 2) }.keys.sort
+  end
+
+  private
+
+  def formatting_output(group_hashes)
+    group_hashes.map do |name, interests|
+      "#{name}:#{interests.join(',')}"
+    end.join("\n") << "\n"
+  end
+
+  def data_for_histogram(name)
+    reject_strangers(name).flat_map do |_, details_hash|
       details_hash[:user_groups]
     end
-    histogram = Hash[*data_for_histogram.group_by { |v| v }.flat_map { |k, v| [k, v.size] }]
-    histogram.select { |_, value| value >= (friends_of_user.count / 2) }.keys.sort
+  end
+
+  def reject_strangers(name)
+    user_hash.reject { |key| !user_hash[name.to_s][:friends].include?(key) }
+  end
+
+  def histogram(array)
+    Hash[*array.group_by { |value| value }.flat_map { |key, value| [key, value.size] }]
   end
 end
