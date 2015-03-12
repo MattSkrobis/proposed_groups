@@ -1,7 +1,5 @@
-require 'histogram'
 
 class UsersCollection
-  include Histogram
   attr_reader :user_hash
   LINE_PARSING_REGEXP = /(?<user_name>[^:]*):(?<friends>[^:]*):(?<interests>[^\n]*)/
 
@@ -22,7 +20,10 @@ class UsersCollection
   end
 
   def suggested_groups_for(name)
-    histogram(data_for_histogram(name)).select { |_, value| value >= (user_hash[name.to_s][:friends].count / 2) }.keys.sort
+    histogram(data_for_histogram(name))
+        .reject {|interest| user_hash[name.to_s][:user_groups].include?(interest)}
+        .select { |_, value| value >= (user_hash[name.to_s][:friends].count / 2) }
+        .keys.sort
   end
 
   private
@@ -35,5 +36,15 @@ class UsersCollection
 
   def reject_strangers(name)
     user_hash.reject { |key| !user_hash[name.to_s][:friends].include?(key) }
+  end
+
+  def histogram(array)
+    Hash[*array.group_by { |value| value }.flat_map { |key, value| [key, value.size] }]
+  end
+
+  def data_for_histogram(name)
+    reject_strangers(name).flat_map do |_, details_hash|
+      details_hash[:user_groups]
+    end
   end
 end

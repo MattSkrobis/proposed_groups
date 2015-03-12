@@ -33,7 +33,7 @@ describe UsersCollection do
     end
 
     describe '#suggested_groups' do
-      it { expect(users_collection_2.suggested_groups).to eq "Amira:Mineral collecting\nElliot:Mineral collecting\nIsaura:Driving,Mineral collecting\nLizzie:Driving,Juggling,Mineral collecting\nMadalyn:Driving,Juggling,Mineral collecting\nMargarito:Driving,Juggling,Mineral collecting\nShakira:Driving,Juggling,Mineral collecting\nUn:Driving,Mineral collecting\nVerla:Driving,Mineral collecting,Rugby\nWilford:Juggling,Mineral collecting\n" }
+      it { expect(users_collection_2.suggested_groups).to eq "Amira:\nElliot:\nIsaura:Driving,Mineral collecting\nLizzie:Juggling\nMadalyn:Juggling\nMargarito:Driving,Juggling\nShakira:Driving,Juggling\nUn:Driving,Mineral collecting\nVerla:Rugby\nWilford:Juggling,Mineral collecting\n" }
     end
   end
 end
