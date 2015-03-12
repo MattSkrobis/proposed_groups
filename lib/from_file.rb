@@ -5,9 +5,23 @@ require 'users_collection'
 module FromFile
 
   def self.call
-    users_per_line = File.open(ARGV[0], "r").read
-    UsersCollection.new(users_per_line).suggested_groups
+    user_collection_object.suggested_groups
   end
+
+  private
+
+  def self.user_collection_object
+    UsersCollection.new(input_file.read)
+  end
+
+  def self.input_file
+    File.open(file_path, "r")
+  end
+
+  def self.file_path
+    ARGV[0]
+  end
+
 end
 
 puts FromFile.call
